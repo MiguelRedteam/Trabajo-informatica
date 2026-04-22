@@ -1,21 +1,52 @@
 #include <stdio.h>
 #include <math.h>
-#define N 300
+#define N 5005
+
+// Variables del trabajo conjuntas
+
+struct info {
+	int anio;
+	int mes;
+	int dia;
+	char dia_semana;
+	char hora_inicio;
+	char hora_fin;
+	char actividad_base;
+	char modalidad;
+	char centro;
+	int plazas;
+	int ocupadas;
+	int libres;
+	char tipo_actividad;
+}
+
+
+
+// Variables de Belen
 
 
 
 
-struct TEstudiante {
-	int nmatricula;
-	char dni[10];
-	char nombre[50];
-	char apellidos[100];
-	float nota_acceso;
-};
+
+//Variables de Alonso
+
+
+
+
+//Variables de Pau
+
+
+
+
+
+//Variables de Adolfo
+
+
+
 
 int main() {
 	int opcion;
-	struct TEstudiante e100ordenados[N];
+	struct TEstudiante info[N];
 	struct TEstudiante aux;
 	struct TEstudiante e100[N] = {{50001, "5000000A", "Mario", "Lopez", 10.93}, {50002, "5000300A", "Maria", "Lopez", 11.93}, {50003, "5030000A", "Marta", "Lopez", 12.03}};
 	int nestudiantes = 0;
@@ -23,11 +54,12 @@ int main() {
 	float nota_max; // Mayor nota
 	int pos_m; // Posicion del estudiante con la mayor nota
 	float nota_corte;
+
 	// Primer paso, leer los datos desde el fichero y volcarlo a la memoria (vector de estructuras de TEstudiante)
 
 
 	FILE * fentrada;
-	fentrada = fopen("datos.txt","r");
+	fentrada = fopen("deportes_ayuntamiento.txt","r");
 	if (fentrada == NULL) {
 		printf("Error abriendo el fichero \n");
 		return 0;
