@@ -28,7 +28,8 @@ int leer_archivo(const char *nombre_archivo, struct info usuario[]);
 //Funciones nombradas
 void analizarTiposActividades(struct info usuario[], int total_registros);//Pau
 void analizarDemanda(struct info usuario[], int total_registros);//Pau
-void analizarComparacionCentros(struct info usuario[], int total_registros);//emetealo
+int leer_archivo(const char *nombre_archivo, struct info usuario[]); //De clase
+void sustituirespacios(char texto[], int p);
 
 int main (){
 
@@ -82,7 +83,6 @@ int main (){
 
 			case 4:
 				printf("\n--- Comparacion de uso entre centros ---\n");
-				analizarComparacionCentros(usuario, total_registros);
 				break;
 
 			case 5:
@@ -188,86 +188,13 @@ void analizarDemanda(struct info usuario[], int total_registros){
 
 }
 
-// emtealo comparacion de ocupacion de centros
+void sustiuirespacios(char texto[]) {
+	int i = 0;
 
-void analizarComparacionCentros(struct info usuario[], int total_registros)
-{
-    /* 1. Definicion de estructura local segun el Libro (Cap 4.4) */
-    struct resumen
-    {
-        char nombre[100];
-        int suma_plazas;
-        int suma_ocupadas;
-    };
-
-    struct resumen listado[100]; /* Soporta hasta 100 centros distintos */
-    int n_centros = 0;
-    int i, j;
-    float max_porcentaje = -1.0f;
-    char centro_ganador[100] = "";
-
-    /* --- FASE 1: AGREGACION (Procesamiento del archivo) --- */
-    for (i = 0; i < total_registros; i++)
-    {
-        int encontrado = -1; /* Indica si el centro ya esta en el listado */
-
-        /* Busqueda del centro actual en nuestro array de resumen (Cap 4.3.4.5) */
-        for (j = 0; j < n_centros; j++)
-        {
-            if (strcmp(usuario[i].centro, listado[j].nombre) == 0)
-            {
-                encontrado = j;
-                break;
-            }
-        }
-
-        if (encontrado != -1)
-        {
-            /* Si ya existe, acumulamos los datos (Cap 2.5.6) */
-            listado[encontrado].suma_plazas += usuario[i].plazas;
-            listado[encontrado].suma_ocupadas += usuario[i].ocupadas;
-        }
-        else
-        {
-            /* Si es nuevo, lo registramos en la siguiente posicion libre */
-            strcpy(listado[n_centros].nombre, usuario[i].centro);
-            listado[n_centros].suma_plazas = usuario[i].plazas;
-            listado[n_centros].suma_ocupadas = usuario[i].ocupadas;
-            n_centros++;
-        }
-    }
-
-    /* --- FASE 2: CALCULO Y SALIDA (Cap 7.2.1.1) --- */
-    printf("\n======================================================\n");
-    printf("   COMPARATIVA DE USO POR CENTRO DEPORTIVO\n");
-    printf("======================================================\n");
-    printf("%-35s | %-12s\n", "NOMBRE DEL CENTRO", "OCUPACION %");
-    printf("------------------------------------------------------\n");
-
-    for (i = 0; i < n_centros; i++)
-    {
-        if (listado[i].suma_plazas > 0)
-        {
-            /* Promocion automatica a float para precision (Cap 2.5.7) */
-            float porcentaje = (listado[i].suma_ocupadas * 100.0f) / listado[i].suma_plazas;
-
-            printf("%-35s | %10.2f%%\n", listado[i].nombre, porcentaje);
-
-            /* Hallar el maximo (Logica de problemas resueltos Cap 8) */
-            if (porcentaje > max_porcentaje)
-            {
-                max_porcentaje = porcentaje;
-                strcpy(centro_ganador, listado[i].nombre);
-            }
-        }
-    }
-
-    /* --- FASE 3: RESULTADO FINAL --- */
-    printf("------------------------------------------------------\n");
-    if (n_centros > 0)
-    {
-        printf("CENTRO CON MAYOR DEMANDA:\n");
-        printf(">> %s (%.2f%% de ocupacion).\n", centro_ganador, max_porcentaje);
-    }
-    printf("======================================================\n");
+	while (texto[i]!='\0') {
+		if (texto[i] == '_') {
+			texto[i] = ' ';
+		}
+		i++;
+	}
 }
