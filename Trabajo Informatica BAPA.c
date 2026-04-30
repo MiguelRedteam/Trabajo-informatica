@@ -30,7 +30,6 @@ void analizarTiposActividades(struct info usuario[], int total_registros);//Pau
 void analizarDemanda(struct info usuario[], int total_registros);//Pau
 void analizarComparacionCentros(struct info usuario[], int total_registros);//emetealo
 
-
 int main (){
 
 	 static struct info usuario[N];
