@@ -1,162 +1,274 @@
 #include <stdio.h>
-
 #include <stdlib.h>
+#include <string.h>
 
 #define N 5005
 
-
 //Aquí fuera no inicialicemos variables que nos la cargamos
 
-
 //Aqui declaramos el prototipo de las funciones
-
-
-
-
 struct info {
-	int anio;
-	int mes;
-	int dia;
-	char dia_semana[40];			// Los 3 primeros int, los 6 siguientes char, luego 3 int y luego 1 char final.
-	char hora_inicio[40];
-	char hora_fin[40];
-	char actividad_base[100];
-	char modalidad[100];
-	char centro[100];
-	int plazas;
-	int ocupadas;
-	int libres;
-	char tipo_actividad[40];
+    int anio;
+    int mes;
+    int dia;
+    char dia_semana[40];
+    char hora_inicio[40];
+    char hora_fin[40];
+    char actividad_base[100];
+    char modalidad[100];
+    char centro[100];
+    int plazas;
+    int ocupadas;
+    int libres;
+    char tipo_actividad[40];
 };
+
+int leer_archivo(const char *nombre_archivo, struct info usuario[]);
+
+//Funciones nombradas
+void analizarTiposActividades(struct info usuario[], int total_registros);//Pau
+void analizarDemanda(struct info usuario[], int total_registros);//Pau
+void analizarComparacionCentros(struct info usuario[], int total_registros);//emetealo
+
 
 int main (){
 
-	struct info usuario[N];
+	 static struct info usuario[N];
 
 	//Aquí vamos poniendo las variables que necesitemos, id poniendo un comentario para saber cual es cual y todas las que declareis juntas.
 
 	//Variables Miguel
-
-	int nusuarios = 0; //numero de usuarios, empezamos en cero weon
 	int i = 0; //Contador para los vectores con los datos weon
-
-	int opcion; //Opcion elegida en el menú
+	int opcion; //Opcion elegida en el menú (AHORA TODO NÚMEROS)
+	int total_registros=0;
 
 	//Variables Belén
 
-
-
 	//Variables Pau
-
-
-
 
 	//Variables Alonso
 
-
-
-
-
-
 	//Primero leemos el fichero y cargamos los datos en la memoria
+	total_registros = leer_archivo("deportes_ayuntamiento.txt", usuario);
 
-	FILE * fentrada;
-	fentrada = fopen("deportes_ayuntamiento.txt","r");
-	if (fentrada == NULL) {
-		printf("Error abriendo el fichero, vuelva a intentarlo. \n \n");
-		return 0;
-	}
-
-
-// Se puede hacer con la funcion feof (esta en el libro)
-
-	while (fscanf(fentrada,"%d %d %d %s %s %s %s %s %s %d %d %d %s ",
-	&usuario[i].anio,
-	&usuario[i].mes,
-	&usuario[i].dia,
-	usuario[i].dia_semana,
-	usuario[i].hora_inicio,
-	usuario[i].hora_fin,					//Lo pongo en vertical porque asi podemos copiar y pegar si necesitamos usar varias de golpe.
-	usuario[i].actividad_base,
-	usuario[i].modalidad,
-	usuario[i].centro,
-	&usuario[i].plazas,
-	&usuario[i].ocupadas,
-	&usuario[i].libres,
-	usuario[i].tipo_actividad
-	)!= EOF){
-		i++;
-		nusuarios++;
-	}
-	fclose(fentrada);
-	printf("Fichero leido correctamente");
+    if (total_registros == 0) {
+        printf("No se pudieron cargar datos o el archivo esta vacio.\n");
+    }
 
 	do {
-		printf(" ** PORTAL DE DEPORTES DE LA COMUNIDAD DE MADRID  ** ");
+		printf("\n ** PORTAL DE DEPORTES DE LA COMUNIDAD DE MADRID  ** \n");
 		printf("Introduce una opcion:\n");
 		printf("1. Ocupacion media por centro \n");
 		printf("2. Ocupacion por actividad\n");
 		printf("3. Ocupacion por franja de horario\n");
-		printf("4. Comparación de uso entre centros\n");
+		printf("4. Comparacion de uso entre centros\n");
 		printf("5. Actividades de alta y baja demanda\n");
-		printf("6. Ocupacion por franja de horario\n");
-		printf("7. Comparación de uso entre centros\n");
-		printf("8. Actividades de alta y baja demanda\n");
-		printf("9. Análisis tipos de actividades\n");
-		printf("'S' Para salir del programa.\n \n");
+		printf("6. Analisis tipos de actividades (Uso libre vs Dirigida)\n");
+		printf("0. Salir del programa.\n");
+		printf("Opcion: ");
 		scanf("%d", &opcion);
+
 		switch(opcion) {
 			case 1:
-				printf("Ocupacion media por centro\n");
+				printf("\n--- Ocupacion media por centro ---\n");
 				break;
 
 			case 2:
-				printf("Ocupacion por actividad\n");
+				printf("\n--- Ocupacion por actividad ---\n");
 				break;
 
-			case 3: //esta opcion trata de ordenar los alumnos de mayor a menor nota
-				printf("Ocupacion por franja horaria");
+			case 3:
+				printf("\n--- Ocupacion por franja horaria ---\n");
 				break;
 
 			case 4:
-				printf("Comparacion de uso entre centros\n");
+				printf("\n--- Comparacion de uso entre centros ---\n");
+				analizarComparacionCentros(usuario, total_registros);
 				break;
 
 			case 5:
-				printf("Actividades de alta y baja demanda\n");
+				printf("\n--- Actividades de alta y baja demanda ---\n");
 				break;
-
 
 			case 6:
-				printf("Ocupacion por franja de horario\n");
+				printf("\n--- Analisis tipos de actividades ---\n");
+				// AQUÍ ES DONDE LLAMARÁS A TU FUNCIÓN ASÍ:
+			    analizarTiposActividades(usuario, total_registros);
 				break;
 
-			case 7:
-				printf("Comparacion de uso entre centros\n");
-				break;
-
-			case 8:
-				printf("Actividades de alta y baja demanda\n");
-				break;
-
-			case 9:
-				printf("Analisis tipos de actividades");
-				break;
-
-			case 'S':
-				printf("Saliendo del programa, gracias por confiar en nosotros");
+			case 0:
+				printf("\nSaliendo del programa, gracias por confiar en nosotros.\n");
 				break;
 
 			default:
-				printf("Opcion incorrecta, teclee otra opcion o escriba 'S' para salir del programa.");
+				printf("\nOpcion incorrecta, teclee otra opcion o escriba '0' para salir del programa.\n");
 		}
-	}while (opcion!='S');
+	} while (opcion != 0);
 
-
-
-return 0;
+    return 0;
 }
 
+//Ahora aqui abajo desarrollamos las funciones.
 
-//Ahora aqui abajo desarrollamos las funciones, yo propongo hacer por cada case una funcion, y asi tenemos el programa mas ordenado y limpio, en cada case simplemente inicializamos la funcion y listo.
-//Al poner la funcion poned un comentario con vuestro nombre y lo que hace.
+//DESARROLLO DE FUNCIONES
+
+//Leer archivo - Belén
+int leer_archivo(const char *nombre_archivo, struct info usuario[]) {
+    FILE *archivo = fopen(nombre_archivo, "r");
+    if (archivo == NULL) {
+        printf("Error: No se pudo abrir el archivo %s\n", nombre_archivo);
+        return 0;
+    }
+
+    char cabecera[N];
+    fgets(cabecera, N, archivo); // Saltar la primera línea
+
+   	int nusuarios = 0; //numero de usuarios, empezamos en cero
+    int i = 0;
+
+    // Mientras no lleguemos al máximo y el fscanf lea todos los campos que queremos
+    while (i < N &&
+           fscanf(archivo, "%d %d %d %s %s %s %s %s %s %d %d %d %s",
+		&usuario[i].anio,
+		&usuario[i].mes,
+		&usuario[i].dia,
+		usuario[i].dia_semana,
+		usuario[i].hora_inicio,
+		usuario[i].hora_fin,
+		usuario[i].actividad_base,
+		usuario[i].modalidad,
+		usuario[i].centro,
+		&usuario[i].plazas,
+		&usuario[i].ocupadas,
+		&usuario[i].libres,
+		usuario[i].tipo_actividad
+		) != EOF) {
+
+        i++;
+       	nusuarios++; //para saber el n total de usuarios
+    }
+
+    fclose(archivo);
+    return i; // Devolvemos el total de lineas leídas para guardarlo en total_registros
+}
+//funciones :----D
+//Pau analizar actividades dirigidas y libres:
+void analizarTiposActividades(struct info usuario[], int total_registros){
+int i=0;
+int contador_libre=0;
+int contador_dirigida=0;
+for (i;i<total_registros;i++){
+    if (strcmp(usuario[i].tipo_actividad,"uso_libre")==0){
+        contador_libre=contador_libre+1;
+    }else{
+        contador_dirigida=contador_dirigida+1;
+    }
+}
+printf("Sesiones de Uso Libre: %d\n", contador_libre);
+printf("Sesiones de Actividad Dirigida: %d\n", contador_dirigida);
+}
+
+//Pau analizar demanda
+void analizarDemanda(struct info usuario[], int total_registros){
+    int i=0;
+    int max_ocupadas = usuario[0].ocupadas;
+    int min_ocupadas = usuario[0].ocupadas;
+    int pos_max=0;
+    int pos_min=0; //posiciones
+    for (i=0;i< total_registros;i++){
+        if(max_ocupadas<usuario[i].ocupadas){
+            max_ocupadas=usuario[i].ocupadas;
+            pos_max=i;
+        }if(min_ocupadas>usuario[i].ocupadas){
+            min_ocupadas=usuario[i].ocupadas;
+            pos_min=i;
+        }
+    }
+    printf("El juego MAS popular es %s con %d jugadores.\n", usuario[pos_max].ocupadas, max_ocupadas);
+    printf("El juego MENOS popular es %s con %d jugadores.\n", usuario[pos_min].ocupadas, min_ocupadas);
+
+}
+
+// emtealo comparacion de ocupacion de centros
+
+void analizarComparacionCentros(struct info usuario[], int total_registros)
+{
+    /* 1. Definicion de estructura local segun el Libro (Cap 4.4) */
+    struct resumen
+    {
+        char nombre[100];
+        int suma_plazas;
+        int suma_ocupadas;
+    };
+
+    struct resumen listado[100]; /* Soporta hasta 100 centros distintos */
+    int n_centros = 0;
+    int i, j;
+    float max_porcentaje = -1.0f;
+    char centro_ganador[100] = "";
+
+    /* --- FASE 1: AGREGACION (Procesamiento del archivo) --- */
+    for (i = 0; i < total_registros; i++)
+    {
+        int encontrado = -1; /* Indica si el centro ya esta en el listado */
+
+        /* Busqueda del centro actual en nuestro array de resumen (Cap 4.3.4.5) */
+        for (j = 0; j < n_centros; j++)
+        {
+            if (strcmp(usuario[i].centro, listado[j].nombre) == 0)
+            {
+                encontrado = j;
+                break;
+            }
+        }
+
+        if (encontrado != -1)
+        {
+            /* Si ya existe, acumulamos los datos (Cap 2.5.6) */
+            listado[encontrado].suma_plazas += usuario[i].plazas;
+            listado[encontrado].suma_ocupadas += usuario[i].ocupadas;
+        }
+        else
+        {
+            /* Si es nuevo, lo registramos en la siguiente posicion libre */
+            strcpy(listado[n_centros].nombre, usuario[i].centro);
+            listado[n_centros].suma_plazas = usuario[i].plazas;
+            listado[n_centros].suma_ocupadas = usuario[i].ocupadas;
+            n_centros++;
+        }
+    }
+
+    /* --- FASE 2: CALCULO Y SALIDA (Cap 7.2.1.1) --- */
+    printf("\n======================================================\n");
+    printf("   COMPARATIVA DE USO POR CENTRO DEPORTIVO\n");
+    printf("======================================================\n");
+    printf("%-35s | %-12s\n", "NOMBRE DEL CENTRO", "OCUPACION %");
+    printf("------------------------------------------------------\n");
+
+    for (i = 0; i < n_centros; i++)
+    {
+        if (listado[i].suma_plazas > 0)
+        {
+            /* Promocion automatica a float para precision (Cap 2.5.7) */
+            float porcentaje = (listado[i].suma_ocupadas * 100.0f) / listado[i].suma_plazas;
+
+            printf("%-35s | %10.2f%%\n", listado[i].nombre, porcentaje);
+
+            /* Hallar el maximo (Logica de problemas resueltos Cap 8) */
+            if (porcentaje > max_porcentaje)
+            {
+                max_porcentaje = porcentaje;
+                strcpy(centro_ganador, listado[i].nombre);
+            }
+        }
+    }
+
+    /* --- FASE 3: RESULTADO FINAL --- */
+    printf("------------------------------------------------------\n");
+    if (n_centros > 0)
+    {
+        printf("CENTRO CON MAYOR DEMANDA:\n");
+        printf(">> %s (%.2f%% de ocupacion).\n", centro_ganador, max_porcentaje);
+    }
+    printf("======================================================\n");
+}
