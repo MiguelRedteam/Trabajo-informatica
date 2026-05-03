@@ -1,0 +1,15 @@
+anio mes dia dia_semana festividad tipo
+2026 1 1 jueves Ano_Nuevo Nacional
+2026 1 6 martes Epifania_del_Senor Nacional
+2026 4 2 jueves Jueves_Santo Autonomico
+2026 4 3 viernes Viernes_Santo Nacional
+2026 5 1 viernes Fiesta_del_Trabajo Nacional
+2026 5 2 sabado Fiesta_de_la_Comunidad_de_Madrid Autonomico
+2026 5 15 viernes San_Isidro_Labrador Local
+2026 8 15 sabado Asuncion_de_la_Virgen Nacional
+2026 10 12 lunes Fiesta_Nacional_de_Espana Nacional
+2026 11 2 lunes Traslado_de_Todos_los_Santos Autonomico
+2026 11 9 lunes Nuestra_Senora_de_La_Almudena Local
+2026 12 7 lunes Traslado_Dia_de_la_Constitucion Autonomico
+2026 12 8 martes Inmaculada_Concepcion Nacional
+2026 12 25 viernes Natividad_del_Senor Nacional
