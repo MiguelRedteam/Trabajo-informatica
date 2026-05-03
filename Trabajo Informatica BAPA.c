@@ -3,10 +3,12 @@
 #include <string.h>
 
 #define N 5005
+#define MAX_FESTIVOS 30
 
 //Aquí fuera no inicialicemos variables que nos la cargamos
 
 //Aqui declaramos el prototipo de las funciones
+
 struct info {
     int anio;
     int mes;
@@ -23,16 +25,27 @@ struct info {
     char tipo_actividad[40];
 };
 
-struct festivo {		//estructura del fichero de festivos (Belen)
+struct festivo {
 	int anio;
-	int mes;
+	int mes;					//estructura del fichero de festivos (Belen)
 	int dia;
 	char dia_semana[40];
 	char festividad[100];
 	char tipo[50];
+	int total_festivos;
 };
 
-int leer_archivo(const char *nombre_archivo, struct info usuario[]);
+struct buscado { //Esto tambien lo tengo que terminar (Adolfo)
+
+
+
+
+
+
+
+};
+
+int leer_archivo(const char *nombre_archivo, int tipo_archivo, struct info usuario[],struct festivo lista_festivos[]); //Esto lo tengo que terminar  (Adolfo)
 
 //Funciones nombradas
 //1
@@ -54,7 +67,7 @@ void analizarTiposActividades(struct info usuario[], int total_registros);//Pau
 void sustituirespacios(char texto[]); //De clase, añadido por Adolfo
 void ponerespacios(char texto[]); //De clase, añadido por Adolfo. Lo contrario al programa anterior por si queremos modificar datos en el fichero.
 
-void comprobar_festivo(int d, int m, struct festivo lista[], int total); //Añadido por Belen
+int comprobar_festivo(int d, int m, struct festivo lista_festivo[], int total_festivos); //Añadido por Belen
 
 
 
@@ -63,20 +76,43 @@ void comprobar_festivo(int d, int m, struct festivo lista[], int total); //Añad
 
 int main (){
 
-	 static struct info usuario[N];
+	static struct info usuario[N];
+	static struct festivo lista_festivos[MAX_FESTIVOS];
+
+
+
+	char nombre_archivo_datos[100];
+	char nombre_archivo_festivos[100]; //esto no es global, pero si no lo pongo aqui no hay manera de q funcione
+
+
 
 	//Aquí vamos poniendo las variables que necesitemos, id poniendo un comentario para saber cual es cual y todas las que declareis juntas.
 
 	//Variables Miguel
-	int i = 0; //Contador para los vectores con los datos weon
+
 	int opcion; //Opcion elegida en el menú (AHORA TODO NÚMEROS)
 	int total_registros=0;
+
+	int anio_buscado, mes_buscado, dia_buscado, dia_sem_buscado; //pongo esto por aqui para que compile, luego con la funcion lo hago bien para que tenga datos
+	int total_festivos = 1;
+
 
 	//Variables Belén
 
 	//Variables Pau
 
-	//Primero leemos el fichero y cargamos los datos en la memoria
+	//Primero leemos el fichero y cargamos los datos en la memoria (Adolfo) OJO QUE ACTUALIZO ESTO EN LA V6
+	printf("Bienvenido a nuestro programa para facilitar ver las estadisticas de las actividades deportivas en Madrid.\n \n Para que nuestro programa funcione, porfavor indicanos el archivo donde leer los datos ");
+	printf("Presione enter para continuar");
+	system("pause");
+	system("cls");
+
+	scanf("%[^\n]",nombre_archivo_datos);
+	printf("\n \n Ahora escribe el nombre del archivo de  ");
+
+	//Tengo que terminar esto por aqui
+
+
 	total_registros = leer_archivo("deportes_ayuntamiento.txt", usuario);
 
     if (total_registros == 0) {
@@ -147,6 +183,7 @@ int main (){
 
 				// LLAMADA A LA FUNCIÓN
 				comprobar_festivo(dia_buscado, mes_buscado, lista_festivos, total_festivos);
+				break;
 
 			case 0:
 				system("cls");
@@ -249,7 +286,9 @@ void analizarDemanda(struct info usuario[], int total_registros){
     char actividades_vistas[500][100];
     char actividad_base[100];
     int total_vistas = 0;
-    festivo=0;
+	int anio_buscado, mes_buscado, dia_buscado;
+	char dia_sem_buscado[40];
+	int festivo=0;
 
     printf("Seleccione dia que quiera realizar una actividad (Anio Mes Dia Dia_Semana):\n");
     scanf("%d %d %d %s", &anio_buscado, &mes_buscado, &dia_buscado, dia_sem_buscado);
@@ -258,7 +297,7 @@ void analizarDemanda(struct info usuario[], int total_registros){
 
     if(festivo!=1){
 	    do {
-	    	printf("%s %d %d %d",dia__sem_buscado, dia_buscado, mes_buscado, anio_buscado);
+	    	printf("%s %d %d %d",dia_sem_buscado, dia_buscado, mes_buscado, anio_buscado);
 	        printf("\n--- ANALISIS DE DEMANDA DE ACTIVIDADES ---\n");
 	        printf("1. Actividades con mas demanda\n");
 	        printf("2. Buscador de plazas por actividad\n");
@@ -542,23 +581,4 @@ void ponerespacios(char texto[]) {
 	}
 }
 
-
-void comprobar_festivo(int d, int m, struct festivo lista[], int dim) {
-	int encontrado = 0;
-	int j;
-	for ( j = 0; j < dim; j++) {
-		// Comparamos el día y el mes introducidos con la lista
-		if (lista[j].dia == d && lista[j].mes == m) {
-			printf("\nAVISO: El dia seleccionado es FESTIVO: %s (%s)\n",
-					lista[j].festividad, lista[j].tipo);
-			encontrado = 1;
-			break; // Si lo encuentra, deja de buscar
-		}
-	}
-
-	if (encontrado!=1) {
-		printf("\nEl dia seleccionado es un dia laborable.\n");
-
-	}
-}
 
