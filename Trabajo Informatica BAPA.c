@@ -1,4 +1,4 @@
-//Grupo 5 V8.0 15/05/2026 por adolfo
+//Grupo 5 V8.5 16/05/2026 por Belén
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,11 +56,11 @@ void ponerespacios(char texto[]); //De clase, añadido por Adolfo.
 
 int comprobar_festivo(int d, int m, struct festivo lista_festivo[], int total_festivos); //Añadido por Belen
 
-void menuUsuario(struct info usuario[],int total_registros);//Pau funcion del menu Usuario
+void menuUsuario(struct info usuario[],int total_registros); //Pau funcion del menu Usuario
 
-void AnalizarDemandaCentro(struct info usuario[],int total_registros,char centro_elegido[]);//Usuario demanda del centro elegido
+void AnalizarDemandaCentro(struct info usuario[],int total_registros,char centro_elegido[]); //Usuario demanda del centro elegido
 
-void AnalizarActividadesCentro(struct info usuario[], int total_registros,char centro_elegido[]);//Usuario activdad por centro
+void AnalizarActividadesCentro(struct info usuario[], int total_registros,char centro_elegido[]); //Usuario activdad por centro
 
 void AnalizarHorariosCentro( struct info usuario[], int total_registros,char centro_elegido[] );
 
@@ -70,6 +70,7 @@ void Lista_centros(struct info usuario[], int total_registros);
 
 void actualizarbasedatos(struct info usuario[],struct festivo lista_festivos[], int *ptr_registros, int *ptr_festivos); //actualizar base de datos, añadido por adolfo
 
+void Lista_actividades(struct info usuario[], int total_registros);
 
 int main (){
 
@@ -99,7 +100,7 @@ int main (){
 
     total_festivos = leer_archivo("festivos_madrid_2026_v2.txt", 2, usuario, lista_festivos);
 
-    printf("Bienvenido a nuestro programa para facilitar ver las estadisticas de las actividades deportivas en Madrid.\n Pulse enter para continuar...\n");
+    printf("Bienvenido a nuestro programa para facilitar ver las estadisticas de las actividades deportivas en Madrid.\n");
     system("pause");
     system("cls");
 	printf("Elige una opcion:\n");
@@ -217,7 +218,7 @@ if (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0){
         printf("2. Ver ocupacion de actividades\n");
         printf("3. Balance uso libre vs dirigido\n");
         printf("4. Analizar demanda por fecha\n");
-        printf("5. Actualizar base de datos");
+        printf("5. Actualizar base de datos\n");
         printf("0. Salir del programa\n");
         printf("Opcion: ");
         scanf("%d", &opcion);
@@ -251,6 +252,7 @@ if (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0){
             system("cls");
                 actualizarbasedatos(usuario,lista_festivos,&total_registros,&total_festivos);
                 system("pause");
+                break;
 
             case 0:
                 printf("\nSaliendo del menu de administrador...\n");
@@ -275,7 +277,7 @@ void menuUsuario(struct info usuario[], int total_registros) {
     do {
         printf("\nEscriba el nombre del Centro Deportivo a consultar.\n");
         printf("(Escriba 'LISTA' para ver los centros disponibles o 'SALIR' para volver al inicio): ");
-        scanf("%s", centro_elegido);
+        scanf(" %[^\n]", centro_elegido);
 
         if (strcmp(centro_elegido, "Salir") == 0 || strcmp(centro_elegido, "SALIR") == 0) {
             printf("\nVolviendo al menu principal...\n");
@@ -405,7 +407,7 @@ void AnalizarHorariosCentro(struct info usuario[], int total_registros, char cen
     do {
         printf("\n¿De que actividad quieres consultar el horario?\n");
         printf("(Escribe el nombre tal como aparece arriba o 'SALIR' para volver): ");
-        scanf("%s", actividad_buscada);
+        scanf(" %[^\n]", actividad_buscada);
 
         if (strcmp(actividad_buscada, "SALIR") == 0 || strcmp(actividad_buscada, "Salir") == 0) {
             printf("\nVolviendo al menu del centro...\n");
@@ -498,7 +500,7 @@ void AnalizarActividadesCentro(struct info usuario[], int total_registros, char 
     do {
         printf("\n¿Deseas ver la demanda detallada de alguna actividad?\n");
         printf("(Escribe el nombre o 'SALIR' para volver): ");
-        scanf("%s", actividad_buscada);
+        scanf(" %[^\n]", actividad_buscada);
 
         if (strcmp(actividad_buscada, "SALIR") == 0 || strcmp(actividad_buscada, "Salir") == 0) {
             printf("\nCerrando catalogo...\n");
@@ -591,6 +593,7 @@ void analizarTiposActividades(struct info usuario[], int total_registros){
     int contador_libre=0;
     int contador_dirigida=0;
     char actividad_base[100];
+    char actividad_elegida[100];
     for (i=0; i<total_registros; i++){
        if (strcmp(usuario[i].tipo_actividad,"uso_libre")==0){
           contador_libre=contador_libre+1;
@@ -602,6 +605,16 @@ void analizarTiposActividades(struct info usuario[], int total_registros){
     printf("Sesiones de Actividad Dirigida: %d\n", contador_dirigida);
 
     printf("¿Que actividad quiere consultar? ");
+    printf("(Escriba 'LISTA' para ver las actividades disponibles o 'SALIR' para volver al inicio): ");
+	scanf(" %[^\n]", actividad_elegida);
+
+    if (strcmp(actividad_elegida, "Salir") == 0 || strcmp(actividad_elegida, "SALIR") == 0) {
+		printf("\nVolviendo al menu principal...\n");
+    }
+
+    if (strcmp(actividad_elegida, "LISTA") == 0) {
+	    Lista_actividades( usuario, total_registros);
+	}
     scanf("%s",actividad_base);
     for (i=0; i<total_registros; i++){
        if(strcmp(usuario[i].actividad_base,actividad_base)==0){
@@ -667,7 +680,7 @@ void analizarDemanda(struct info usuario[], int total_registros, struct festivo 
 
                 case 2:
                     printf("\n¿Que actividad quiere consultar?: ");
-                    scanf("%s", actividad_base);
+                    scanf(" %[^\n]", actividad_base);
                     for (i = 0; i < total_registros; i++) {
                        if (usuario[i].dia == dia_buscado && usuario[i].mes == mes_buscado && usuario[i].anio == anio_buscado) {
                            if (strcmp(usuario[i].actividad_base, actividad_base) == 0) {
@@ -877,6 +890,32 @@ int cargarUsuarios(struct login lista[]) {
 
     fclose(archivo);
     return i;
+}
+
+void Lista_actividades(struct info usuario[], int total_registros){
+		char actividades_vistas[500][100];
+        int total_actividades = 0;
+        int repetido;
+		int i=0, j=0;
+      	 printf("\n--- ACTIVIDADES DISPONIBLES ---\n");
+
+        for (i = 0; i < total_registros; i++) {
+            repetido = 0;
+            for (j = 0; j < total_registros; j++) {
+                if (strcmp(usuario[i].actividad_base, actividades_vistas[j]) == 0) {
+                    repetido = 1;
+                    break;
+                }
+            }
+        	if (repetido == 0) {
+                printf("- %s\n", usuario[i].actividad_base);
+                if (total_actividades < 500) {		//Por si hay mas de 500 centros
+                	strcpy(actividades_vistas[total_actividades], usuario[i].actividad_base);
+                	total_actividades++;
+            	}
+
+            }
+        }
 }
 
 void Lista_centros(struct info usuario[], int total_registros){
