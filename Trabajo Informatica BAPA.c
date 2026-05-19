@@ -123,7 +123,7 @@ int main () {
     system("pause");
     system("cls");
 
-	printf("Iniciar sesión\n");
+	printf("Iniciar sesion\n");
 
     do {
         printf("Usuario: ");
@@ -156,7 +156,7 @@ if  (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0 || strcmp(usuar
     do {
        system("cls");
        printf("\n ** PORTAL DE DEPORTES DE LA COMUNIDAD DE MADRID  ** \n");
-       printf("Introduce una opción:\n");
+       printf("Introduce una opcion:\n");
        printf("1. Informacion Centros Deportivos \n");
        printf("2. Buscador de plazas libres\n");
        printf("0. Salir del programa\n");
@@ -186,7 +186,7 @@ if  (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0 || strcmp(usuar
              break;
 
           default:
-             printf("\nOpción incorrecta, teclee otra opción o escriba '0' para salir del programa.\n");
+             printf("\nOpcion incorrecta, teclee otra opción o escriba '0' para salir del programa.\n");
              system("pause");
        }
     } while (opcion != 0);
@@ -511,6 +511,7 @@ void AnalizarActividadesCentro(struct info usuario[], int total_registros, char 
 
 	    if (strcmp(actividad_buscada, "LISTA") == 0) {
 		    Lista_actividades( usuario, total_registros);
+	        continue;
 		}
 
         if (strcmp(actividad_buscada, "SALIR") == 0 || strcmp(actividad_buscada, "Salir") == 0) {
@@ -1016,7 +1017,7 @@ void Lista_actividades(struct info usuario[], int total_registros){
 
         for (i = 0; i < total_registros; i++) {
             repetido = 0;
-            for (j = 0; j < total_registros; j++) {
+            for (j = 0; j < total_actividades; j++) {
                 if (strcmp(usuario[i].actividad_base, actividades_vistas[j]) == 0) {
                     repetido = 1;
                     break;
