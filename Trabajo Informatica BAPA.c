@@ -463,10 +463,10 @@ void AnalizarActividadesCentro(struct info usuario[], int total_registros, char 
             }
 
             if (posicion_en_libreta != -1) {
-                // YA EXISTE: Le sumamos las plazas de esta nueva sesión al total
+
                 plazas_acumuladas[posicion_en_libreta] = plazas_acumuladas[posicion_en_libreta] + usuario[i].plazas;
             } else {
-                // ES NUEVA: La apuntamos en un renglón nuevo
+
                 strcpy(actividades_vistas[total_vistas], usuario[i].actividad_base);
                 strcpy(tipos_vistos[total_vistas], usuario[i].tipo_actividad);
                 plazas_acumuladas[total_vistas] = usuario[i].plazas;
@@ -767,6 +767,7 @@ int comprobar_festivo(int d, int m, struct festivo lista[], int dim) {
 }
 
 // emtealo comparacion de ocupacion de centros
+
 void analizarComparacionCentros(struct info usuario[], int total_registros){
     struct resumen {
         char nombre[100];
@@ -779,6 +780,7 @@ void analizarComparacionCentros(struct info usuario[], int total_registros){
     int i, j;
     float max_porcentaje = -1.0f;
     char centro_ganador[100] = "";
+
 
     for (i = 0; i < total_registros; i++) {
         int encontrado = -1;
@@ -802,8 +804,9 @@ void analizarComparacionCentros(struct info usuario[], int total_registros){
     printf("\n======================================================\n");
     printf("   COMPARATIVA DE USO POR CENTRO DEPORTIVO\n");
     printf("======================================================\n");
-    printf("%-35s | %-12s\n", "NOMBRE DEL CENTRO", "OCUPACIÓN %");
+    printf("%-35s | %-12s\n", "NOMBRE DEL CENTRO", "OCUPACION %");
     printf("------------------------------------------------------\n");
+
 
     for (i = 0; i < n_centros; i++) {
         if (listado[i].suma_plazas > 0) {
@@ -825,13 +828,12 @@ void analizarComparacionCentros(struct info usuario[], int total_registros){
     printf("------------------------------------------------------\n");
     if (n_centros > 0) {
         printf("CENTRO CON MAYOR DEMANDA:\n");
-
+        // Hacemos el clon tambien para el ganador final
         char ganador_limpio[200];
         strcpy(ganador_limpio, centro_ganador);
-
         sustituirespacios(ganador_limpio);
 
-        printf(">> %s (%.2f%% de ocupación).\n", ganador_limpio, max_porcentaje);
+        printf(">> %s (%.2f%% de ocupacion).\n", ganador_limpio, max_porcentaje);
     }
     printf("======================================================\n");
 }
@@ -1099,6 +1101,7 @@ void buscadorDisponibilidad(struct info usuario[], int total_registros) {
 
     printf("¿Que actividad quieres hacer hoy? (ej. Natacion): ");
     scanf(" %[^\n]", actividad_deseada);
+
     ponerespacios(actividad_deseada); // Usamos la funcion para los guiones
 
     printf("\nBuscando centros con plazas LIBRES para esa actividad...\n\n");
