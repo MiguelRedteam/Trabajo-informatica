@@ -1,4 +1,4 @@
-//Grupo 5 V10 19/05/2026 por adolfo
+//Grupo 5, 19/05/2026 version a entregar
 
 #include <stdio.h>
 #include <stdlib.h>
