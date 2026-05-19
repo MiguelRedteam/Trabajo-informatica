@@ -603,149 +603,226 @@ void analizarTiposActividades(struct info usuario[], int total_registros){
     int i=0;
     int contador_libre=0;
     int contador_dirigida=0;
-    char actividad_base[100];
     char actividad_elegida[100];
+
+    // Contamos las actividades generales
     for (i=0; i<total_registros; i++){
        if (strcmp(usuario[i].tipo_actividad,"uso_libre")==0){
-          contador_libre=contador_libre+1;
+          contador_libre++;
        }else{
-          contador_dirigida=contador_dirigida+1;
+          contador_dirigida++;
        }
     }
+
+    printf("\n--- BALANCE DE SESIONES ---\n");
     printf("Sesiones de Uso Libre: %d\n", contador_libre);
     printf("Sesiones de Actividad Dirigida: %d\n", contador_dirigida);
+    printf("---------------------------\n");
 
-    printf("¿Que actividad quiere consultar? ");
-    printf("(Escriba 'LISTA' para ver las actividades disponibles o 'SALIR' para volver al inicio): ");
-	scanf(" %[^\n]", actividad_elegida);
+    do {
+        printf("\n¿Que actividad quiere consultar?\n");
+        printf("(Escriba 'LISTA' para ver las actividades disponibles o 'SALIR' para volver): ");
+        scanf(" %[^\n]", actividad_elegida);
 
-    if (strcmp(actividad_elegida, "Salir") == 0 || strcmp(actividad_elegida, "SALIR") == 0) {
-		printf("\nVolviendo al menu principal...\n");
-    }
+        if (strcmp(actividad_elegida, "Salir") == 0 || strcmp(actividad_elegida, "SALIR") == 0) {
+            printf("\nVolviendo al menu del administrador...\n");
+            return; // EXPULSA AL USUARIO DE VUELTA AL MENÚ
+        }
 
-    if (strcmp(actividad_elegida, "LISTA") == 0) {
-	    Lista_actividades( usuario, total_registros);
-	}
-    for (i=0; i<total_registros; i++){
-       if(strcmp(usuario[i].actividad_base,actividad_base)==0){
-          printf("La actividad %s es del tipo %s\n",actividad_elegida,usuario[i].tipo_actividad);
-          break;
-       }
-    }
+        if (strcmp(actividad_elegida, "LISTA") == 0) {
+            Lista_actividades(usuario, total_registros);
+            continue; // Rebobina el bucle y vuelve a preguntar
+        }
+
+        // Si no quiso salir, le ponemos los guiones para que strcmp pueda trabajar
+        ponerespacios(actividad_elegida);
+
+        int encontrada = 0;
+        for (i=0; i<total_registros; i++){
+           if(strcmp(usuario[i].actividad_base, actividad_elegida)==0) {
+
+              //Una vez mas, imprimimos sin guiones
+              char act_limpia[200], tipo_limpio[200];
+              strcpy(act_limpia, usuario[i].actividad_base);
+              strcpy(tipo_limpio, usuario[i].tipo_actividad);
+              sustituirespacios(act_limpia);
+              sustituirespacios(tipo_limpio);
+
+              printf(">> La actividad '%s' es de tipo: %s\n", act_limpia, tipo_limpio);
+              encontrada = 1;
+              break;
+           }
+        }
+
+        if (encontrada == 0) {
+            printf("Error: No se ha encontrado la actividad. Compruebe que está escrita igual que en la lista.\n");
+        }
+
+    } while (1);
 }
 
 // Pau y Belen: Analizar demanda
-// Actualizada para recibir los festivos
+
 void analizarDemanda(struct info usuario[], int total_registros, struct festivo lista_festivos[], int total_festivos){
-    int i = 0;
-    int max_ocupadas = usuario[0].ocupadas;
-    int min_ocupadas = usuario[0].ocupadas;
-    int pos_max = 0;
-    int pos_min = 0;
     int sub_opcion;
-    int repetida;
-    char actividades_vistas[500][100];
-    char actividad_base[100];
-    int total_vistas = 0;
     int anio_buscado, mes_buscado, dia_buscado;
     char dia_sem_buscado[40];
     int festivo = 0;
-    int j;
-    int encontrada = 0;
+    int i, j;
 
-    printf("Seleccione día que quiera realizar una actividad (Anio Mes Día Día_Semana):\n");
+    system("cls");
+    printf("--- ANALISIS DE DEMANDA POR FECHA ---\n");
+    printf("Seleccione dia que quiera consultar (Anio Mes Dia Dia_Semana):\n");
+    printf("Ejemplo: 2026 5 19 Martes\n>> ");
     scanf("%d %d %d %s", &anio_buscado, &mes_buscado, &dia_buscado, dia_sem_buscado);
 
-    // ¡ARREGLADO!: Le quitamos los corchetes vacíos a lista_festivos
+    // Comprobamos si es festivo
     festivo = comprobar_festivo(dia_buscado, mes_buscado, lista_festivos, total_festivos);
 
     if(festivo != 1){
         do {
-            printf("\n%s %d/%d/%d\n", dia_sem_buscado, dia_buscado, mes_buscado, anio_buscado);
-            printf("--- ANALISIS DE DEMANDA DE ACTIVIDADES ---\n");
-            printf("1. Actividades con mas demanda\n");
+            system("cls");
+            printf("\n>> FECHA SELECCIONADA: %s %02d/%02d/%d <<\n", dia_sem_buscado, dia_buscado, mes_buscado, anio_buscado);
+            printf("--- MENU DE DEMANDA DE ACTIVIDADES ---\n");
+            printf("1. Actividad con mas y menos demanda\n");
             printf("2. Buscador de plazas por actividad\n");
-            printf("3. Ver catalogo completo de actividades y sus plazas\n");
-            printf("0. Volver al menú principal\n");
-            printf("Elige una opción: ");
+            printf("3. Ver catalogo de plazas disponibles ese dia\n");
+            printf("0. Volver al menu principal\n");
+            printf("Elige una opcion: ");
             scanf("%d", &sub_opcion);
 
             switch(sub_opcion) {
-                case 1:
+                case 1: { // Usamos llaves para poder declarar variables dentro del case sin que C se queje
+                    int max_ocupadas = -1;       // Empezamos muy bajo
+                    int min_ocupadas = 999999;   // Empezamos muy alto
+                    int pos_max = -1;
+                    int pos_min = -1;
+                    int encontrados_dia = 0;
+
                     for (i = 0; i < total_registros; i++){
-                       if (usuario[i].dia == dia_buscado && usuario[i].mes == mes_buscado && usuario[i].anio == anio_buscado) {
-                           if(max_ocupadas < usuario[i].ocupadas){
-                               max_ocupadas = usuario[i].ocupadas;
-                               pos_max = i;
-                           }
-                           if(min_ocupadas > usuario[i].ocupadas){
-                               min_ocupadas = usuario[i].ocupadas;
-                               pos_min = i;
-                           }
-                       }
+                        if (usuario[i].dia == dia_buscado && usuario[i].mes == mes_buscado && usuario[i].anio == anio_buscado) {
+                            encontrados_dia++;
+                            if(usuario[i].ocupadas > max_ocupadas){
+                                max_ocupadas = usuario[i].ocupadas;
+                                pos_max = i;
+                            }
+                            if(usuario[i].ocupadas < min_ocupadas){
+                                min_ocupadas = usuario[i].ocupadas;
+                                pos_min = i;
+                            }
+                        }
                     }
-                    printf("\nLa actividad mas popular es %s con %d plazas ocupadas.\n", usuario[pos_max].actividad_base, max_ocupadas);
-                    printf("La actividad menos popular es %s con %d plazas ocupadas.\n", usuario[pos_min].actividad_base, min_ocupadas);
+
+                    if (encontrados_dia > 0) {
+                        // Hacemos clones para imprimir bonito
+                        char max_limpio[200], min_limpio[200];
+                        strcpy(max_limpio, usuario[pos_max].actividad_base);
+                        strcpy(min_limpio, usuario[pos_min].actividad_base);
+                        sustituirespacios(max_limpio);
+                        sustituirespacios(min_limpio);
+
+                        printf("\nLa actividad MAS popular es %s con %d plazas ocupadas.\n", max_limpio, max_ocupadas);
+                        printf("La actividad MENOS popular es %s con %d plazas ocupadas.\n", min_limpio, min_ocupadas);
+                    } else {
+                        printf("\nError: No se han encontrado registros de actividades para el dia introducido.\n");
+                    }
+                    system("pause");
                     break;
+                }
 
-                case 2:
-                    printf("\n¿Qué actividad quiere consultar?: ");
-                    printf("(Escriba 'LISTA' para ver las actividades disponibles o 'SALIR' para volver al inicio): ");
-					scanf(" %[^\n]", actividad_base);
+                case 2: {
+                    char actividad_base[100];
+                    int encontrada = 0;
 
-				    if (strcmp(actividad_base, "Salir") == 0 || strcmp(actividad_base, "SALIR") == 0) {
-						printf("\nVolviendo al menu principal...\n");
-				    }
+                    printf("\n¿Que actividad quiere consultar?: ");
+                    printf("(Escriba 'LISTA' para ver las disponibles o 'SALIR' para cancelar): ");
+                    scanf(" %[^\n]", actividad_base);
 
-				    if (strcmp(actividad_base, "LISTA") == 0) {
-					    Lista_actividades( usuario, total_registros);
-					}
+                    if (strcmp(actividad_base, "Salir") == 0 || strcmp(actividad_base, "SALIR") == 0) {
+                        break; // Sale solo del case 2 y vuelve al submenu
+                    }
+
+                    if (strcmp(actividad_base, "LISTA") == 0) {
+                        Lista_actividades(usuario, total_registros);
+                        break;
+                    }
+
+                    ponerespacios(actividad_base);
 
                     for (i = 0; i < total_registros; i++) {
-                       if (usuario[i].dia == dia_buscado && usuario[i].mes == mes_buscado && usuario[i].anio == anio_buscado) {
-                           if (strcmp(usuario[i].actividad_base, actividad_base) == 0) {
-                               printf("La actividad %s tiene un total de %d plazas de las cuales, %d estan libres y %d estan ocupadas\n", actividad_base, usuario[i].plazas, usuario[i].libres, usuario[i].ocupadas);
-                               encontrada = 1;
-                               break;
-                           }
-                       }
+                        if (usuario[i].dia == dia_buscado && usuario[i].mes == mes_buscado && usuario[i].anio == anio_buscado) {
+                            if (strcmp(usuario[i].actividad_base, actividad_base) == 0) {
+
+                                char act_limpia[200];
+                                strcpy(act_limpia, actividad_base);
+                                sustituirespacios(act_limpia);
+
+                                printf(">> %s en Centro '%s': %d plazas Totales (%d Libres | %d Ocupadas)\n",
+                                       act_limpia, usuario[i].centro, usuario[i].plazas, usuario[i].libres, usuario[i].ocupadas);
+                                encontrada = 1;
+                            }
+                        }
                     }
                     if (encontrada == 0) {
-                        printf("La actividad '%s' no se encuentra en la base de datos para ese dia.\n", actividad_base);
+                        printf("La actividad no se encuentra en la base de datos para ese dia.\n");
                     }
+                    system("pause");
                     break;
+                }
 
-                case 3:
-                    printf("\n--- CATALOGO DE ACTIVIDADES POR DEMANDA ---\n");
+                case 3: {
+                    char actividades_vistas[500][100];
+                    int total_vistas = 0;
+                    int repetida;
+
+                    printf("\n--- CATALOGO DE ACTIVIDADES DEL DIA ---\n");
                     printf("%-35s | %-20s\n", "ACTIVIDAD", "PLAZAS LIBRES");
                     printf("--------------------------------------------------------\n");
-                    total_vistas = 0;
+
                     for (i = 0; i < total_registros; i++) {
-                        repetida = 0;
-                        for ( j = 0; j < total_vistas; j++) {
-                           if (usuario[i].dia == dia_buscado && usuario[i].mes == mes_buscado && usuario[i].anio == anio_buscado) {
-                               if (strcmp(usuario[i].actividad_base, actividades_vistas[j]) == 0) {
-                                   repetida = 1;
-                                   break;
-                               }
-                           }
-                        }
-                        if (repetida == 0 && usuario[i].dia == dia_buscado && usuario[i].mes == mes_buscado && usuario[i].anio == anio_buscado) {
-                            printf("%-35s | %-20d\n", usuario[i].actividad_base, usuario[i].libres);
-                            strcpy(actividades_vistas[total_vistas], usuario[i].actividad_base);
-                            total_vistas++;
+                        if (usuario[i].dia == dia_buscado && usuario[i].mes == mes_buscado && usuario[i].anio == anio_buscado) {
+                            repetida = 0;
+
+                            for (j = 0; j < total_vistas; j++) {
+                                if (strcmp(usuario[i].actividad_base, actividades_vistas[j]) == 0) {
+                                    repetida = 1;
+                                    break;
+                                }
+                            }
+
+                            if (repetida == 0) {
+                                char act_limpia[200];
+                                strcpy(act_limpia, usuario[i].actividad_base);
+                                sustituirespacios(act_limpia);
+
+                                printf("%-35s | %-20d\n", act_limpia, usuario[i].libres);
+
+                                if (total_vistas < 500) {
+                                    strcpy(actividades_vistas[total_vistas], usuario[i].actividad_base);
+                                    total_vistas++;
+                                }
+                            }
                         }
                     }
+                    if (total_vistas == 0) {
+                        printf("No hay actividades registradas en esta fecha.\n");
+                    }
+                    system("pause");
                     break;
+                }
 
                 case 0:
                     printf("\n----- Saliendo de la herramienta de analisis... -----\n");
                     break;
 
                 default:
-                    printf("Opción no valida. Intentalo de nuevo.\n");
+                    printf("Opcion no valida. Intentalo de nuevo.\n");
+                    system("pause");
             }
         } while (sub_opcion != 0);
+    } else {
+
+        system("pause");
     }
 }
 
@@ -775,12 +852,12 @@ void analizarComparacionCentros(struct info usuario[], int total_registros){
         int suma_ocupadas;
     };
 
-    struct resumen listado[100];
+    //Cambio la memoria a 500 para que tenga hueco de sobra
+    struct resumen listado[500];
     int n_centros = 0;
     int i, j;
     float max_porcentaje = -1.0f;
     char centro_ganador[100] = "";
-
 
     for (i = 0; i < total_registros; i++) {
         int encontrado = -1;
@@ -793,7 +870,7 @@ void analizarComparacionCentros(struct info usuario[], int total_registros){
         if (encontrado != -1) {
             listado[encontrado].suma_plazas += usuario[i].plazas;
             listado[encontrado].suma_ocupadas += usuario[i].ocupadas;
-        } else {
+        } else if (n_centros < 500) { // Protección extra añadida
             strcpy(listado[n_centros].nombre, usuario[i].centro);
             listado[n_centros].suma_plazas = usuario[i].plazas;
             listado[n_centros].suma_ocupadas = usuario[i].ocupadas;
@@ -807,14 +884,13 @@ void analizarComparacionCentros(struct info usuario[], int total_registros){
     printf("%-35s | %-12s\n", "NOMBRE DEL CENTRO", "OCUPACION %");
     printf("------------------------------------------------------\n");
 
-
     for (i = 0; i < n_centros; i++) {
         if (listado[i].suma_plazas > 0) {
             float porcentaje = (listado[i].suma_ocupadas * 100.0f) / listado[i].suma_plazas;
 
             char centro_limpio[200];
             strcpy(centro_limpio, listado[i].nombre);
-            sustituirespacios(centro_limpio); // meto esto para quitar los guiones
+            sustituirespacios(centro_limpio);
 
             printf("%-35s | %10.2f%%\n", centro_limpio, porcentaje);
 
@@ -846,7 +922,8 @@ void analizarOcupacionActividades(struct info usuario[], int total_registros){
         int suma_ocupadas;
     };
 
-    struct resumen_actividad lista_deportes[150];
+    // Aumentamos memoria a 500
+    struct resumen_actividad lista_deportes[500];
     int n_deportes = 0;
     int i, j;
 
@@ -862,7 +939,7 @@ void analizarOcupacionActividades(struct info usuario[], int total_registros){
         if (encontrado != -1) {
             lista_deportes[encontrado].suma_plazas += usuario[i].plazas;
             lista_deportes[encontrado].suma_ocupadas += usuario[i].ocupadas;
-        } else {
+        } else if (n_deportes < 500) { // Candado de seguridad
             strcpy(lista_deportes[n_deportes].nombre, usuario[i].actividad_base);
             lista_deportes[n_deportes].suma_plazas = usuario[i].plazas;
             lista_deportes[n_deportes].suma_ocupadas = usuario[i].ocupadas;
@@ -871,14 +948,13 @@ void analizarOcupacionActividades(struct info usuario[], int total_registros){
     }
 
     printf("\n======================================================\n");
-    printf("     ANALISIS DE OCUPACIÓN POR ACTIVIDAD BASE\n");
+    printf("     ANALISIS DE OCUPACION POR ACTIVIDAD BASE\n");
     printf("======================================================\n");
-    printf("%-35s | %-12s\n", "ACTIVIDAD DEPORTIVA", "OCUPACIÓN %");
+    printf("%-35s | %-12s\n", "ACTIVIDAD DEPORTIVA", "OCUPACION %");
     printf("------------------------------------------------------\n");
 
     for (i = 0; i < n_deportes; i++) {
         if (lista_deportes[i].suma_plazas > 0) {
-
             float porcentaje = (lista_deportes[i].suma_ocupadas * 100.0f) / lista_deportes[i].suma_plazas;
 
             char dep_limpio[200];
@@ -1005,54 +1081,42 @@ void Lista_centros(struct info usuario[], int total_registros){
 
 void actualizarbasedatos(struct info usuario[],struct festivo lista_festivos[], int *ptr_registros, int *ptr_festivos) {
 
-
     char nombre_archivo_datos[100];
     char nombre_archivo_festivos[100];
 
-    do{
-        printf("Para actualizar la base de datos, por favor indicanos los nombres de los archivos o escribe 'SALIR' para cancelar.\n");
-        printf("Escribe el nombre del archivo de DATOS (ej. deportes.txt): ");
-        scanf("%[^\n]", nombre_archivo_datos);
+    do {
+        system("cls"); // Limpiamos la pantalla al inicio de cada intento
+        printf("Para actualizar la base de datos, por favor indicanos los nombres de los archivos.\n");
+        printf("Escribe el nombre del archivo de DATOS (ej. deportes.txt) o escribe 'SALIR' para cancelar: ");
 
-        //Ponemos ya que si se quiere salir que se salga, no hay que insistir tampoco
+
+        scanf(" %[^\n]", nombre_archivo_datos);
+
+        // Comprobamos si quiere salir
         if (strcmp(nombre_archivo_datos, "SALIR") == 0 || strcmp(nombre_archivo_datos, "Salir") == 0) {
-            printf("Cancelando, volviendo al menú");
-            system("pause");
-            system("cls");
-
+            printf("\nCancelando actualizacion. Volviendo al menu...\n");
             return;
         }
-//Ahora le pido el de los festivos por si acaso quiere cambiarlo
 
-        printf("Escribe el nombre del archivo de FESTIVOS: ");
+        printf("Escribe el nombre del archivo de FESTIVOS (ej. festivos.txt): ");
         scanf(" %[^\n]", nombre_archivo_festivos);
 
+        // Intentamos abrir y cargar los archivos
+        *ptr_registros = leer_archivo(nombre_archivo_datos, 1, usuario, lista_festivos);
+        *ptr_festivos = leer_archivo(nombre_archivo_festivos, 2, usuario, lista_festivos);
 
-    printf("Escribe el nombre del archivo de DATOS (ej. deportes.txt): ");
-    scanf(" %[^\n]", nombre_archivo_datos);
-    system("pause");
-    system("cls");
+        if (*ptr_registros == 0 && *ptr_festivos == 0) {
+            printf("\n[ERROR] No se pudieron cargar datos o los archivos estan vacios.\n");
+            printf("Asegurate de haber puesto el .txt al final e intentalo de nuevo.\n");
+            system("pause");
+        }
 
-    printf("\nEscribe el nombre del archivo de FESTIVOS (ej. festivos.txt): \n");
-    scanf(" %[^\n]", nombre_archivo_festivos);
+    } while (*ptr_registros == 0 && *ptr_festivos == 0); // Se repite si hay error
 
-    *ptr_registros = leer_archivo(nombre_archivo_datos, 1, usuario, lista_festivos);
-    *ptr_festivos = leer_archivo(nombre_archivo_festivos, 2, usuario, lista_festivos);
-
-
-    if (*ptr_registros == 0 && *ptr_festivos == 0) {
-        printf("\nNo se pudieron cargar datos o los archivos estan vacios.\n");
-        system("pause");
-    }
-
-    } while (*ptr_registros == 0 && *ptr_festivos == 0);
-
-    //Si llegamos aqui es que ya lo hemos hecho bien si o si
-
+    // Si llegamos aqui es que ha salido todo bien
     printf("\nExito: Se cargaron %d actividades y %d dias festivos.\n", *ptr_registros, *ptr_festivos);
 
-    //Nos guardamos el nombre en el archivo de configuracion para la proxima vez que queramos iniciar el programa
-
+    // Nos guardamos el nombre en el archivo de configuracion
     FILE *archivo_config = fopen("configuracion.txt", "w");
     if (archivo_config != NULL) {
         fprintf(archivo_config, "%s\n%s\n", nombre_archivo_datos, nombre_archivo_festivos);
@@ -1060,7 +1124,6 @@ void actualizarbasedatos(struct info usuario[],struct festivo lista_festivos[], 
     }
 
     system("pause");
-
 }
 
 void registrarusuario(struct login usuarios[], int *total) {
