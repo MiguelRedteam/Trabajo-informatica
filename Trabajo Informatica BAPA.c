@@ -128,7 +128,7 @@ int main () {
     do {
         printf("Usuario: ");
         scanf("%s", usuario_intro);
-        printf("Contraseña: ");
+        printf("Contrasenia: ");
         scanf("%d", &contrasenia_intro);
 
         //vamos a ver si puede entrar
@@ -146,7 +146,7 @@ int main () {
         }
 
         if (login_correcto == 0) {
-            printf("Usuario o contraseña incorrectos. Intentalo de nuevo.\n\n");
+            printf("Usuario o contrasenia incorrectos. Intentalo de nuevo.\n\n");
         }
     } while (login_correcto == 0);
 
@@ -186,7 +186,7 @@ if  (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0 || strcmp(usuar
              break;
 
           default:
-             printf("\nOpcion incorrecta, teclee otra opción o escriba '0' para salir del programa.\n");
+             printf("\nOpcion incorrecta, teclee otra opcion o escriba '0' para salir del programa.\n");
              system("pause");
        }
     } while (opcion != 0);
@@ -198,7 +198,7 @@ if  (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0 || strcmp(usuar
         system("cls");
         printf("\n--- MENU ADMINISTRADOR ---\n");
         printf("1. Comparar uso de polideportivos\n");
-        printf("2. Ver ocupación de actividades\n");
+        printf("2. Ver ocupacion de actividades\n");
         printf("3. Balance uso libre vs dirigido\n");
         printf("4. Analizar demanda por fecha\n");
         printf("5. Actualizar base de datos\n");
@@ -289,10 +289,10 @@ void menuUsuario(struct info usuario[], int total_registros) {
         do {
             printf("\n--- GESTIONANDO CENTRO: %s ---\n", centro_elegido);
             printf("1. Ver demanda general del centro\n");
-            printf("2. Ver información de horarios\n");
+            printf("2. Ver informacion de horarios\n");
             printf("3. Ver actividades ofertadas\n");
-            printf("0. Volver a la selección de centro\n");
-            printf("Elige una opción: ");
+            printf("0. Volver a la seleccion de centro\n");
+            printf("Elige una opcion: ");
             scanf("%d", &opcion_centro);
 
             switch(opcion_centro) {
@@ -320,7 +320,7 @@ void menuUsuario(struct info usuario[], int total_registros) {
                     break;
 
                 default:
-                    printf("Opción no valida.\n");
+                    printf("Opcion no valida.\n");
             }
         } while (opcion_centro != 0);
 
@@ -347,7 +347,7 @@ void AnalizarDemandaCentro(struct info usuario[],int total_registros,char centro
     if (centro_encontrado == 1) {
         printf("Total de plazas OCUPADAS en el centro: %d\n", suma_ocupadas);
         printf("Total de plazas LIBRES en el centro: %d\n", suma_libres);
-        printf("Porcentaje de ocupación %d %% \n", (suma_ocupadas*100)/(suma_libres+suma_ocupadas) );
+        printf("Porcentaje de ocupacion %d %% \n", (suma_ocupadas*100)/(suma_libres+suma_ocupadas) );
     } else {
         printf("No se han encontrado registros de actividades para el centro '%s'.\n", centro_elegido);
     }
@@ -832,7 +832,7 @@ int comprobar_festivo(int d, int m, struct festivo lista[], int dim) {
     int j;
     for ( j = 0; j < dim; j++) {
         if (lista[j].dia == d && lista[j].mes == m) {
-            printf("\nAVISO: El día seleccionado es FESTIVO: %s (%s). NO SE REALIZAN ACTIVIDADES.\n",
+            printf("\nAVISO: El dia seleccionado es FESTIVO: %s (%s). NO SE REALIZAN ACTIVIDADES.\n",
                     lista[j].festividad, lista[j].tipo);
             encontrado = 1;
             break;
