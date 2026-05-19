@@ -1,4 +1,4 @@
-//Grupo 5 V9 17/05/2026 por adolfo
+//Grupo 5 V10 19/05/2026 por adolfo
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -159,7 +159,6 @@ if  (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0 || strcmp(usuar
        printf("Introduce una opción:\n");
        printf("1. Informacion Centros Deportivos \n");
        printf("2. Buscador de plazas libres\n");
-       printf("3. Eventos especiales\n");
        printf("0. Salir del programa\n");
        printf("Opción: ");
        scanf("%d", &opcion);
@@ -179,12 +178,6 @@ if  (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0 || strcmp(usuar
              system("pause");
              break;
 
-          case 3:
-             system("cls");
-             printf("\n--- Eventos especiales ---\n");
-             //funcion de eventos especiales
-             system("pause");
-             break;
 
           case 0:
              system("cls");
