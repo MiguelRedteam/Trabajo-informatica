@@ -73,13 +73,16 @@ void actualizarbasedatos(struct info usuario[],struct festivo lista_festivos[], 
 
 void Lista_actividades(struct info usuario[], int total_registros);
 
+void registrarusuario(struct login usuarios[], int *total); //No tiene mucho sentido que cualquiera pueda ser administrador, por lo que creo una funcion para crear usuarios, y en el login quito el registro
+
+void buscadorDisponibilidad(struct info usuario[], int total_registros);
+
 int main () {
 
 	setlocale(LC_ALL, ""); // Para leer las ñ y acentos
 
     static struct info usuario[N];
     static struct festivo lista_festivos[MAX_FESTIVOS];
-
 
 
     int opcion;  //Opcion elegida en el menú
@@ -97,81 +100,65 @@ int main () {
 	int login_correcto=0;
 	int indice_login= -1;		//se pone -1 para que coja una opcion negativa (nadie registrado), si pusieramos 0 cogeria la primera linea
 
-    total_registros = leer_archivo("deportes_ayuntamiento.txt", 1, usuario, lista_festivos);
 
-    // Leemos archivo  tipor 2 (Festivos)
+    char nombre_datos_actual[100] = "deportes_ayuntamiento.txt";
+    char nombre_festivos_actual[100] = "festivos_madrid_2026_v2.txt";
 
-    total_festivos = leer_archivo("festivos_madrid_2026_v2.txt", 2, usuario, lista_festivos);
+
+    FILE *archivo_config = fopen("configuracion.txt", "r");
+
+    if (archivo_config != NULL) {
+        // Si existe, leemos los nombres guardados (con el truco para admitir espacios)
+        fscanf(archivo_config, " %[^\n]", nombre_datos_actual);
+        fscanf(archivo_config, " %[^\n]", nombre_festivos_actual);
+        fclose(archivo_config);
+    }
+
+
+    total_registros = leer_archivo(nombre_datos_actual, 1, usuario, lista_festivos);
+    total_festivos = leer_archivo(nombre_festivos_actual, 2, usuario, lista_festivos);
+
 
     printf("Bienvenido a nuestro programa para facilitar ver las estadisticas de las actividades deportivas en Madrid.\n");
     system("pause");
     system("cls");
-	printf("Elige una opción:\n");
-	printf("[1] Ya tengo una cuenta. Iniciar sesión\n");
-	printf("[2] No tengo una cuenta. Registrarme\n");
-	scanf("%d",&opcion);
 
-	switch (opcion){
-		case 1:
-			do {
-                printf("Usuario: ");
-                scanf("%s", usuario_intro);
-                printf("Contraseña: ");
-                scanf("%d", &contrasenia_intro);
+	printf("Iniciar sesión\n");
 
-                // ¿ existe ? 67
-                for ( i = 0; i < total; i++) {
-                    if (strcmp(usuario_intro, usuarios[i].usuario) == 0 && 		//Comparar caracter por caracter
-                        contrasenia_intro == usuarios[i].contrasenia) {
+    do {
+        printf("Usuario: ");
+        scanf("%s", usuario_intro);
+        printf("Contraseña: ");
+        scanf("%d", &contrasenia_intro);
 
-                        login_correcto = 1;
-                        indice_login = i;
-                        printf("\nAcceso concedido. Bienvenido %s [%s]\n",
-                                usuarios[i].usuario, usuarios[i].tipo_usuario);
-                        break;
-                    }
+        //vamos a ver si puede entrar
+        for (i = 0; i < total; i++) {
+            if (strcmp(usuario_intro, usuarios[i].usuario) == 0 &&
+                contrasenia_intro == usuarios[i].contrasenia) {
+
+                login_correcto = 1;
+                indice_login = i; //fulanito si tiene cuenta
+                printf("\nBienvenido %s [%s]\n",
+                        usuarios[i].usuario, usuarios[i].tipo_usuario);
+                system("pause");
+                break;
                 }
+        }
 
-                if (login_correcto == 0)
-                    printf("Usuario o contraseña incorrectos. Intentalo de nuevo.\n");
-            } while (login_correcto == 0);
-            break;
-
-		case 2:
-			printf("Usuario:\n");
-			scanf("%s",usuarios[total].usuario);
-			printf("Contraseña:\n");
-			scanf("%d",&usuarios[total].contrasenia);
-			printf("Eres cliente o administrador?\n");
-			scanf("%s",usuarios[total].tipo_usuario);
-
-			//Editar archivo de usuarios y añadir el nuevo
-			FILE *archivo = fopen("Usuario_Contrasenia.txt", "a");
-
-            if (archivo == NULL) {
-                printf("Error: No se pudo abrir el archivo.\n");
-            } else {
-                fprintf(archivo, "\n%s %d %s",
-                        usuarios[total].usuario,
-                        usuarios[total].contrasenia,
-                        usuarios[total].tipo_usuario);
-
-                fclose(archivo);
-                printf("Usuario guardado correctamente.\n");
-                total++; // Aumentamos el contador de usuarios en memoria
-            }
-            break;
-	}
+        if (login_correcto == 0) {
+            printf("Usuario o contraseña incorrectos. Intentalo de nuevo.\n\n");
+        }
+    } while (login_correcto == 0);
 
 //Cliente
 
-if (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0){
+if  (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0 || strcmp(usuarios[indice_login].tipo_usuario, "cliente")== 0){
     do {
        system("cls");
        printf("\n ** PORTAL DE DEPORTES DE LA COMUNIDAD DE MADRID  ** \n");
        printf("Introduce una opción:\n");
        printf("1. Informacion Centros Deportivos \n");
-       printf("2. Reservas\n");
+       printf("2. Buscador de plazas libres\n");
        printf("3. Eventos especiales\n");
        printf("0. Salir del programa\n");
        printf("Opción: ");
@@ -187,8 +174,8 @@ if (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0){
 
           case 2:
              system("cls");
-             printf("\n--- Reservas ---\n");
-             //Funcion de reservvas
+             printf("\nBuscador de plazas libres\n");
+               buscadorDisponibilidad(usuario, total_registros);
              system("pause");
              break;
 
@@ -213,7 +200,7 @@ if (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0){
 
 
 //Administrador
-} else if (strcmp(usuarios[indice_login].tipo_usuario, "Administrador") == 0) {
+} else if (strcmp(usuarios[indice_login].tipo_usuario, "Administrador") == 0 || strcmp(usuarios[indice_login].tipo_usuario, "administrador") == 0) {
     do {
         system("cls");
         printf("\n--- MENU ADMINISTRADOR ---\n");
@@ -222,6 +209,7 @@ if (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0){
         printf("3. Balance uso libre vs dirigido\n");
         printf("4. Analizar demanda por fecha\n");
         printf("5. Actualizar base de datos\n");
+        printf("6. Crear nuevo usuario\n");
         printf("0. Salir del programa\n");
         printf("Opción: ");
         scanf("%d", &opcion);
@@ -258,6 +246,14 @@ if (strcmp(usuarios[indice_login].tipo_usuario, "Cliente") == 0){
                 system("pause");
                 break;
 
+            case 6:
+                system("cls");
+                registrarusuario(usuarios, &total);
+                system("pause");
+                break;
+
+
+
             case 0:
                 printf("\nSaliendo del menu de administrador...\n");
                 break;
@@ -282,6 +278,7 @@ void menuUsuario(struct info usuario[], int total_registros) {
         printf("\nEscriba el nombre del Centro Deportivo a consultar.\n");
         printf("(Escriba 'LISTA' para ver los centros disponibles o 'SALIR' para volver al inicio): ");
         scanf(" %[^\n]", centro_elegido);
+        ponerespacios(centro_elegido); //meto esto aqui que sino el usuario deberia meter los guiones bajos y quedaria un poco feo
 
         if (strcmp(centro_elegido, "Salir") == 0 || strcmp(centro_elegido, "SALIR") == 0) {
             printf("\nVolviendo al menu principal...\n");
@@ -497,7 +494,18 @@ void AnalizarActividadesCentro(struct info usuario[], int total_registros, char 
 
     // Ahora solo imprimimos nuestra libreta, que ya tiene todo sumado y sin repetir
     for (j = 0; j < total_vistas; j++) {
-        printf("%-30s | %-20s | %-15d\n", actividades_vistas[j], tipos_vistos[j], plazas_acumuladas[j]);
+        char act_limpia[200], tipo_limpio[200];
+
+
+        strcpy(act_limpia, actividades_vistas[j]);
+        strcpy(tipo_limpio, tipos_vistos[j]);
+
+
+        sustituirespacios(act_limpia); //misma logica que en el resto de apartados, creamos cadenas nuevas, limpiamos e imprimimos
+        sustituirespacios(tipo_limpio);
+
+
+        printf("%-30s | %-20s | %-15d\n", act_limpia, tipo_limpio, plazas_acumuladas[j]);
     }
 
     // --- PARTE 3: EL BUSCADOR INTEGRADO ---
@@ -506,6 +514,7 @@ void AnalizarActividadesCentro(struct info usuario[], int total_registros, char 
         printf("\n¿Deseas ver la demanda detallada de alguna actividad?\n");
         printf("(Escriba 'LISTA' para ver las actividades disponibles o 'SALIR' para volver al inicio): ");
 		scanf(" %[^\n]", actividad_buscada);
+        ponerespacios(actividad_buscada);
 
 	    if (strcmp(actividad_buscada, "LISTA") == 0) {
 		    Lista_actividades( usuario, total_registros);
@@ -806,7 +815,12 @@ void analizarComparacionCentros(struct info usuario[], int total_registros){
     for (i = 0; i < n_centros; i++) {
         if (listado[i].suma_plazas > 0) {
             float porcentaje = (listado[i].suma_ocupadas * 100.0f) / listado[i].suma_plazas;
-            printf("%-35s | %10.2f%%\n", listado[i].nombre, porcentaje);
+
+            char centro_limpio[200];
+            strcpy(centro_limpio, listado[i].nombre);
+            sustituirespacios(centro_limpio); // meto esto para quitar los guiones
+
+            printf("%-35s | %10.2f%%\n", centro_limpio, porcentaje);
 
             if (porcentaje > max_porcentaje) {
                 max_porcentaje = porcentaje;
@@ -818,7 +832,13 @@ void analizarComparacionCentros(struct info usuario[], int total_registros){
     printf("------------------------------------------------------\n");
     if (n_centros > 0) {
         printf("CENTRO CON MAYOR DEMANDA:\n");
-        printf(">> %s (%.2f%% de ocupación).\n", centro_ganador, max_porcentaje);
+
+        char ganador_limpio[200];
+        strcpy(ganador_limpio, centro_ganador);
+
+        sustituirespacios(ganador_limpio);
+
+        printf(">> %s (%.2f%% de ocupación).\n", ganador_limpio, max_porcentaje);
     }
     printf("======================================================\n");
 }
@@ -863,8 +883,14 @@ void analizarOcupacionActividades(struct info usuario[], int total_registros){
 
     for (i = 0; i < n_deportes; i++) {
         if (lista_deportes[i].suma_plazas > 0) {
+
             float porcentaje = (lista_deportes[i].suma_ocupadas * 100.0f) / lista_deportes[i].suma_plazas;
-            printf("%-35s | %10.2f%%\n", lista_deportes[i].nombre, porcentaje);
+
+            char dep_limpio[200];
+            strcpy(dep_limpio, lista_deportes[i].nombre);
+            sustituirespacios(dep_limpio);
+
+            printf("%-35s | %10.2f%%\n", dep_limpio, porcentaje);
         }
     }
     printf("======================================================\n");
@@ -926,11 +952,17 @@ void Lista_actividades(struct info usuario[], int total_registros){
                 }
             }
         	if (repetido == 0) {
-                printf("- %s\n", usuario[i].actividad_base);
-                if (total_actividades < 500) {		//Por si hay mas de 500 actividades
-                	strcpy(actividades_vistas[total_actividades], usuario[i].actividad_base);
-                	total_actividades++;
-            	}
+
+        	    char act_limpia[200];
+        	    strcpy(act_limpia, usuario[i].actividad_base);
+        	    sustituirespacios(act_limpia); //Limpiamos los guioness
+
+        	    printf("- %s\n", act_limpia);
+
+        	    if (total_actividades < 500) {
+        	        strcpy(actividades_vistas[total_actividades], usuario[i].actividad_base);
+        	        total_actividades++;
+        	    }
 
             }
         }
@@ -982,13 +1014,26 @@ void actualizarbasedatos(struct info usuario[],struct festivo lista_festivos[], 
     char nombre_archivo_datos[100];
     char nombre_archivo_festivos[100];
 
+    do{
+        printf("Para actualizar la base de datos, por favor indicanos los nombres de los archivos o escribe 'SALIR' para cancelar.\n");
+        printf("Escribe el nombre del archivo de DATOS (ej. deportes.txt): ");
+        scanf("%[^\n]", nombre_archivo_datos);
 
-    printf("Para que nuestro programa funcione, por favor indicanos el archivo donde leer los datos.\n");
-    system("pause");
-    system("cls");
+        //Ponemos ya que si se quiere salir que se salga, no hay que insistir tampoco
+        if (strcmp(nombre_archivo_datos, "SALIR") == 0 || strcmp(nombre_archivo_datos, "Salir") == 0) {
+            printf("Cancelando, volviendo al menú");
+            system("pause");
+            system("cls");
+
+            return;
+        }
+//Ahora le pido el de los festivos por si acaso quiere cambiarlo
+
+        printf("Escribe el nombre del archivo de FESTIVOS: ");
+        scanf(" %[^\n]", nombre_archivo_festivos);
+
 
     printf("Escribe el nombre del archivo de DATOS (ej. deportes.txt): ");
-
     scanf(" %[^\n]", nombre_archivo_datos);
     system("pause");
     system("cls");
@@ -999,14 +1044,96 @@ void actualizarbasedatos(struct info usuario[],struct festivo lista_festivos[], 
     *ptr_registros = leer_archivo(nombre_archivo_datos, 1, usuario, lista_festivos);
     *ptr_festivos = leer_archivo(nombre_archivo_festivos, 2, usuario, lista_festivos);
 
-    // Leemos archivo  tipor 1 (Actividades)
 
     if (*ptr_registros == 0 && *ptr_festivos == 0) {
-        printf("\nADVERTENCIA: No se pudieron cargar datos o los archivos estan vacios.\n");
-        system("pause");
-    } else {
-        printf("\nExito: Se cargaron %d actividades y %d dias festivos.\n", *ptr_registros, *ptr_festivos);
+        printf("\nNo se pudieron cargar datos o los archivos estan vacios.\n");
         system("pause");
     }
 
+    } while (*ptr_registros == 0 && *ptr_festivos == 0);
+
+    //Si llegamos aqui es que ya lo hemos hecho bien si o si
+
+    printf("\nExito: Se cargaron %d actividades y %d dias festivos.\n", *ptr_registros, *ptr_festivos);
+
+    //Nos guardamos el nombre en el archivo de configuracion para la proxima vez que queramos iniciar el programa
+
+    FILE *archivo_config = fopen("configuracion.txt", "w");
+    if (archivo_config != NULL) {
+        fprintf(archivo_config, "%s\n%s\n", nombre_archivo_datos, nombre_archivo_festivos);
+        fclose(archivo_config);
+    }
+
+    system("pause");
+
 }
+
+void registrarusuario(struct login usuarios[], int *total) {
+
+    printf("--- REGISTRO DE NUEVO USUARIO ---\n");
+    printf("Usuario: ");
+    scanf("%s", usuarios[*total].usuario);
+
+    printf("Contraseña (solo numeros): ");
+    scanf("%d", &usuarios[*total].contrasenia);
+
+    printf("¿Es Cliente o Administrador?: ");
+    scanf("%s", usuarios[*total].tipo_usuario);
+
+
+    FILE *archivo = fopen("Usuario_Contrasenia.txt", "a");
+
+    if (archivo == NULL) {
+        printf("Error: No se pudo abrir el archivo de contraseñas.\n");
+    } else {
+
+        fprintf(archivo, "\n%s %d %s",
+        usuarios[*total].usuario,
+        usuarios[*total].contrasenia,
+        usuarios[*total].tipo_usuario);
+        fclose(archivo);
+
+        printf("\nUsuario [%s] guardado correctamente en la base de datos\n", usuarios[*total].usuario);
+        (*total)++; //para tener un contador de numero de usuarios
+        }
+    }
+
+void buscadorDisponibilidad(struct info usuario[], int total_registros) {
+
+    char actividad_deseada[100];
+    int hueco = 0;
+    int i;
+
+    printf("¿Que actividad quieres hacer hoy? (ej. Natacion): ");
+    scanf(" %[^\n]", actividad_deseada);
+    ponerespacios(actividad_deseada); // Usamos la funcion para los guiones
+
+    printf("\nBuscando centros con plazas LIBRES para esa actividad...\n\n");
+
+    for (i = 0; i < total_registros; i++) {
+        // tiene que ser la misma actividad Y que queden plazas libres
+
+        if (strcmp(usuario[i].actividad_base, actividad_deseada) == 0 && usuario[i].libres > 0) {
+
+
+            char centro_limpio[200];
+            strcpy(centro_limpio, usuario[i].centro);
+            sustituirespacios(centro_limpio);
+
+            printf("- %s | Fecha: %02d/%02d | Horario: %s - %s | Quedan: %d plazas\n", //especifico que sean 2 caracteres para la fecha que asi se ve mas claro
+                   centro_limpio,
+                   usuario[i].dia, usuario[i].mes,
+                   usuario[i].hora_inicio, usuario[i].hora_fin,
+                   usuario[i].libres);
+
+            hueco = 1;
+        }
+    }
+
+    if (hueco == 0) {
+        printf("No quedan plazas libres para esa actividad en Madrid.\n");
+    }
+}
+
+
+
